@@ -1,6 +1,6 @@
 
 --Select Data that we are going to be using
---Why "ORDER BY 3, 4"? Based on 3rd and 4th columns, location and date
+
 SELECT *
  FROM PortfolioProject.dbo.CovidDeaths
  ORDER BY 3, 4
@@ -82,15 +82,6 @@ WHERE continent is null
 GROUP BY location
 ORDER BY TotalDeathCount desc
 
---Again, 
-
-SELECT continent, MAX(cast(total_deaths as int)) as TotalDeathCount
-FROM PortfolioProject.dbo.CovidDeaths
-WHERE continent is not null
-GROUP BY continent
-ORDER BY TotalDeathCount desc
-
-
 --Global Numbers
 
 SELECT SUM(new_cases) as total_cases , SUM(cast(new_deaths as int)) as total_deaths, SUM(cast(new_deaths as int))/SUM(new_cases)*100 as DeathPercentage
@@ -104,7 +95,6 @@ ORDER BY 1, 2
 --Working with CovidVaccinations table and CovidDeaths (joining 2 tables)
 --Where we rename the tables, for example, CovidDeaths as "dea", and CovidVaccinations as "vac"
 --We will be joining 2 tables on location and date
---Always check if joined correctly!!!
 
 SELECT *
 FROM PortfolioProject..CovidDeaths as dea 
@@ -149,8 +139,7 @@ ORDER BY 2, 3
 
 --Now, finally looking at Total Population vs Vaccination
 --However, we can't just run syntax (RollingPeopleVaccinated/population)*100,for that we need to use CTE
---Now, finally looking at Total Population vs Vaccination
---Also the number of columns in CTE has to be the same as in the SELECT syntax 
+
 
 With PopvsVac (Continent, location, date, population, new_vaccinations, RollingPeopleVaccinated)
 as
@@ -171,7 +160,6 @@ FROM PopvsVac
 
 
 --TEMP TABLE
---"DROP TABLE IF exists" is used if an object name is already in database
 
 DROP TABLE #PercentPopulationVaccinated2
 CREATE TABLE #PercentPopulationVaccinated2
