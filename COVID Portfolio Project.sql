@@ -1,15 +1,14 @@
+
+--Select Data that we are going to be using
+--Why "ORDER BY 3, 4"? Based on 3rd and 4th columns, location and date
 SELECT *
  FROM PortfolioProject.dbo.CovidDeaths
  ORDER BY 3, 4
 
 
-
 SELECT *
  FROM PortfolioProject.dbo.CovidVaccinations
  ORDER BY 3, 4
-
---Select Data that we are going to be using
---Why "ORDER BY 3, 4"? Based on 3rd and 4th columns, location and date
 
 SELECT Location, date, total_cases, new_cases, total_deaths, population
 FROM PortfolioProject.dbo.CovidDeaths
