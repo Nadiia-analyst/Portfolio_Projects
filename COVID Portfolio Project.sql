@@ -24,8 +24,8 @@ WHERE Location like '%states'
 and continent is not null
 ORDER BY 1, 2 
 
--- Looking at Total Cases vs. Popultaion
--- Shows what percentage of popultaion that has gotten Covid
+-- Looking at Total Cases vs. Population
+-- Shows what percentage of population that has gotten Covid
 
 SELECT Location, date, total_cases, Population, (total_cases/population)*100 as PopulationPercentage
 FROM PortfolioProject.dbo.CovidDeaths
@@ -37,7 +37,7 @@ FROM PortfolioProject.dbo.CovidDeaths
 ORDER BY 1, 2 
 
 
---Looking at countries with Highest Infection Rate compared to Popultaion 
+--Looking at countries with Highest Infection Rate compared to Population 
 
 SELECT Location, Population, MAX(total_cases) as HighestInfectionRate,  MAX((total_cases/population)*100) as PercentPopulationInfected
 FROM PortfolioProject.dbo.CovidDeaths
@@ -175,13 +175,12 @@ RollingPeopleVaccinated numeric
 INSERT INTO  #PercentPopulationVaccinated2
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
 , SUM(CONVERT(bigint,vac.new_vaccinations)) OVER (Partition by dea.location ORDER BY dea.location, dea.date) as RollingPeopleVaccinated
---, (RollingPeopleVaccinated/population)*100
 FROM PortfolioProject..CovidDeaths as dea 
 JOIN PortfolioProject..CovidVaccinations as vac
     ON dea.location = vac.location
 	and dea.date = vac.date
 WHERE dea.continent is not null
---ORDER BY 2, 3
+
 
 SELECT *, (RollingPeopleVaccinated/population)*100
 FROM #PercentPopulationVaccinated2
