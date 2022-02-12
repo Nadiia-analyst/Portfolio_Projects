@@ -174,12 +174,13 @@ RollingPeopleVaccinated numeric
 
 INSERT INTO  #PercentPopulationVaccinated2
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
-, SUM(CONVERT(bigint,vac.new_vaccinations)) OVER (Partition by dea.location ORDER BY dea.location, dea.date) as RollingPeopleVaccinated
+, SUM(CONVERT(bigint,vac.new_vaccinations)) OVER (Partition by dea.location) as RollingPeopleVaccinated
 FROM PortfolioProject..CovidDeaths as dea 
 JOIN PortfolioProject..CovidVaccinations as vac
     ON dea.location = vac.location
 	and dea.date = vac.date
 WHERE dea.continent is not null
+ORDER BY dea.location, dea.date
 
 
 SELECT *, (RollingPeopleVaccinated/population)*100
