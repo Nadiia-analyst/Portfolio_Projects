@@ -1,0 +1,232 @@
+
+import pandas as pd
+!pip install pandas-datareader -U
+!pip install fix_yahoo_finance -U
+
+
+from pandas_datareader import data as pdr 
+import fix_yahoo_finance as yf
+
+yf.pdr_override()
+
+df0=pdr.get_data_yahoo("SPY", start="2020-04-01", end="2021-04-1")
+df1=pdr.get_data_yahoo("TSLA", start="2020-04-01", end="2021-04-1")
+df2=pdr.get_data_yahoo("BA", start="2020-04-01", end="2021-04-1")
+df3=pdr.get_data_yahoo("NLS", start="2020-04-01", end="2021-04-1")
+df4=pdr.get_data_yahoo("DIS", start="2020-04-01", end="2021-04-1")
+df5=pdr.get_data_yahoo("LULU", start="2020-04-01", end="2021-04-1")
+
+
+return_spy=df0.Close.pct_change()[1:]
+return_tsla=df1.Close.pct_change()[1:]
+return_ba=df2.Close.pct_change()[1:]
+return_nls=df3.Close.pct_change()[1:]
+return_dis=df4.Close.pct_change()[1:]
+return_lulu=df4.Close.pct_change()[1:]
+
+
+import numpy as np  
+import matplotlib.pyplot as plt  
+import datetime
+
+
+
+log_return_spy=np.log(df0['Close']/df0['Close'].shift(1))
+log_return_tsla=np.log(df1['Close']/df1['Close'].shift(1))
+log_return_ba=np.log(df2['Close']/df2['Close'].shift(1))
+log_return_nls=np.log(df3['Close']/df3['Close'].shift(1))
+log_return_dis=np.log(df4['Close']/df4['Close'].shift(1))
+log_return_lulu=np.log(df5['Close']/df4['Close'].shift(1))
+
+
+
+plt.figure(figsize=(15, 8))
+
+return_ba.plot(label='BA')
+return_tsla.plot(label='TSLA')
+plt.ylabel("Daily return")
+plt.legend(loc='best')
+plt.show
+
+
+plt.figure(figsize=(15, 8))
+
+return_nls.plot(label='NLS')
+return_dis.plot(label='DIS')
+return_lulu.plot(label='LULU')
+plt.ylabel("Daily return")
+plt.legend(loc='best')
+plt.show
+
+
+import  statsmodels.api  as  sm
+from  statsmodels.iolib.summary2  import  summary_col
+
+#y=beta0+beta1*x+erro 
+----
+y1=return_tsla.values
+x=return_spy.values
+
+X=sm.add_constant(x)
+
+model=sm.OLS(y1,X)
+result=model.fit(cov_type='HC1')
+print(result.summary())
+
+beta_tsla=result.params[1]
+beta_tsla
+----
+
+
+----
+y2=return_ba.values
+
+model2=sm.OLS(y2,X)
+result2=model2.fit(cov_type='HC1')
+print(result2.summary())
+
+beta_ba=result2.params[1]
+beta_ba
+----
+
+
+----
+y3=return_nls.values
+
+model3=sm.OLS(y3,X)
+result3=model3.fit(cov_type='HC1')
+print(result3.summary())
+
+beta_dis=result3.params[1]
+beta_dis
+---
+
+y4=return_lulu.values
+
+model4=sm.OLS(y4,X)
+result4=model4.fit(cov_type='HC1')
+print(result4.summary())
+
+beta_lulu=result4.params[1]
+beta_lulu
+---
+
+
+---
+y5=return_nls.values
+
+model5=sm.OLS(y4,X)
+result5=model5.fit(cov_type='HC1')
+print(result5.summary())
+
+beta_nls=result5.params[1]
+beta_nls
+---
+
+
+portfolio=pd.concat([df1.Close,df2.Close,df3.Close,df4.Close,df5.Close], axis=1, sort=False)
+portfolio=portfolio.set_axis(['Tesla','Boeing','Nautilus','Disney','Lululemon'], axis=1, inplace=False)
+
+log_return=np.log(portfolio/portfolio.shift(1))
+log_return=log_return.set_axis(['Return of Tesla','Return of Boeing','Return of Nautilus','Return of Disney','Return of Lululemon'], axis=1, inplace=False)
+
+log_return.mean()
+log_return.std()
+
+#Define rf
+rf=0.02
+
+np.random.seed(42)
+num_ports = 10000
+all_weights = np.zeros((num_ports, len(portfolio.columns)))
+return_arr = np.zeros(num_ports)
+volatility_arr = np.zeros(num_ports)
+sharpe_arr = np.zeros(num_ports)
+
+for x in range(num_ports):
+# Weights
+weights = np.array(np.random.random(len(portfolio.columns)))
+weights = weights/np.sum(weights)
+    
+# Save weights
+all_weights[x,:] = weights
+    
+# Expected return
+return_arr[x] = np.sum((log_return.mean() * weights *252))
+#ret_arr[x] = np.sum((ret.mean() * weights *252))
+    
+# Expected volatility
+volatility_arr[x] = np.sqrt(np.dot(weights.T, np.dot(log_return.cov()*252, weights)))
+#vol_arr[x] = np.sqrt(np.dot(weights.T, np.dot(ret.cov()*252, weights)))
+    
+
+sharpe_arr[x] = (return_arr[x]-rf)/volatility_arr[x]
+    
+    
+print('Minimum volatility in the array{}'.format(volatility_arr.min()))
+print('Its location in the array{}'.format(volatility_arr.argmin()))
+
+print(all_weights[volatility_arr.argmin(),:]*100)
+
+corrMatrix = portfolio.corr()
+
+
+import seaborn as sn
+
+
+sn.heatmap(corrMatrix, annot=True)
+plt.show()
+
+
+print('Maximum sharpe ratio in the array{}'.format(sharpe_arr.max()))
+print('Its location in the array{}'.format(sharpe_arr.argmax()))
+
+print(all_weights[sharpe_arr.argmax(),:]*100)
+
+betas=np.array((beta_tsla, beta_ba, beta_nls, beta_dis, beta_lulu))
+
+port_beta=np.dot(all_weights[sharpe_arr.argmax(),:],betas)
+
+
+mkt_return=log_return_spy.mean()
+mkt_return
+
+
+required_ret=rf+port_beta*(mkt_return-rf)
+required_ret
+
+
+df12=pdr.get_data_yahoo("TSLA", start="2021-04-02", end="2021-04-27")
+df22=pdr.get_data_yahoo("BA", start="2021-04-02", end="2021-04-27")
+df32=pdr.get_data_yahoo("NLS", start="2021-04-02", end="2021-04-27")
+df42=pdr.get_data_yahoo("DIS", start="2021-04-02", end="2021-04-27")
+df52=pdr.get_data_yahoo("LULU", start="2021-04-02", end="2021-04-27")
+
+
+beg_tsla=df12.Close[0]
+beg_ba=df22.Close[0]
+beg_nls=df32.Close[0]
+beg_dis=df42.Close[0]
+beg_lulu=df42.Close[0]
+
+end_tsla=df12.Close[15]
+end_ba=df22.Close[15]
+end_nls=df32.Close[15]
+end_dis=df42.Close[15]
+end_lulu=df42.Close[15]
+
+begin=np.array((beg_tsla, beg_ba, beg_nls, beg_dis, beg_lulu))
+end=np.array((end_tsla, end_ba, end_nls, end_dis, beg_lulu))
+
+
+act_ret_num=np.dot(all_weights[sharpe_arr.argmax(),:],end)-np.dot(all_weights[sharpe_arr.argmax(),:],begin)
+
+act_ret_temp=act_ret_num/np.dot(all_weights[sharpe_arr.argmax(),:],begin)
+
+act_ret_temp
+
+
+
+
+
+
