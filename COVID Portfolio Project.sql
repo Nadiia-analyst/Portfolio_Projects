@@ -128,8 +128,9 @@ ORDER BY 2, 3
 -- The sum value now has exceeded 2,147,483,647. So instead of converting it to "int", you we need to convert it to "bigint".
 
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
-, SUM(CONVERT(bigint,vac.new_vaccinations)) OVER (Partition by dea.location ORDER BY dea.location, dea.date) as RollingPeopleVaccinated
+, SUM(CONVERT(bigint,vac.new_vaccinations)) OVER (Partition by dea.location) as RollingPeopleVaccinated
 --, (RollingPeopleVaccinated/population)*100
+ORDER BY dea.location, dea.date
 FROM PortfolioProject..CovidDeaths as dea 
 JOIN PortfolioProject..CovidVaccinations as vac
     ON dea.location = vac.location
