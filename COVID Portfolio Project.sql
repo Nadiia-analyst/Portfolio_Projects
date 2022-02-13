@@ -192,8 +192,9 @@ FROM #PercentPopulationVaccinated2
 
 Create View PercentPopulationVaccinated as
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
-, SUM(CONVERT(bigint,vac.new_vaccinations)) OVER (Partition by dea.location ORDER BY dea.location, dea.date) as RollingPeopleVaccinated
+, SUM(CONVERT(bigint,vac.new_vaccinations)) OVER (Partition by dea.location) as RollingPeopleVaccinated
 --, (RollingPeopleVaccinated/population)*100
+ORDER BY dea.location, dea.date
 FROM PortfolioProject..CovidDeaths as dea 
 JOIN PortfolioProject..CovidVaccinations as vac
     ON dea.location = vac.location
