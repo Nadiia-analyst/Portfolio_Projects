@@ -72,6 +72,6 @@ JOIN ProjectPortfolio.dbo.NashvilleHousing as b
    AND a.[UniqueID] <> b.[UniqueID] 
    
    
-   ---3) Breaking out Address into Individual Columns (Address, City, State)
+---3) Breaking out Address into Individual Columns (Address, City, State)
    
   
