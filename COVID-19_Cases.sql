@@ -105,7 +105,7 @@ JOIN PortfolioProject..CovidVaccinations as vac
 --Looking at Total Population vs Vaccination
 
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
-, SUM(cast(vac.new_vaccinations as bigint)) OVER (Partition by dea.location)
+, SUM(cast(vac.new_vaccinations as bigint)) OVER (Partition by dea.location ORDER BY dea.location, dea.date)
 FROM PortfolioProject..CovidDeaths as dea 
 JOIN PortfolioProject..CovidVaccinations as vac
     ON dea.location = vac.location
@@ -128,7 +128,7 @@ ORDER BY 2, 3
 -- The sum value now has exceeded 2,147,483,647. So instead of converting it to "int", you we need to convert it to "bigint".
 
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
-, SUM(CONVERT(bigint,vac.new_vaccinations)) OVER (Partition by dea.location) as RollingPeopleVaccinated
+, SUM(CONVERT(bigint,vac.new_vaccinations)) OVER (Partition by dea.location ORDER BY dea.location, dea.date) as RollingPeopleVaccinated
 --, (RollingPeopleVaccinated/population)*100
 ORDER BY dea.location, dea.date
 FROM PortfolioProject..CovidDeaths as dea 
@@ -139,10 +139,10 @@ WHERE dea.continent is not null
 ORDER BY 2, 3
 
 --Now, finally looking at Total Population vs Vaccination
---However, we can't just run syntax (RollingPeopleVaccinated/population)*100,for that we need to use CTE
+--However, we can't just run syntax (RollingPeopleVaccinated/population)*100,for that we need to use CTE or TEMP table
 
 
-With PopvsVac (Continent, location, date, population, new_vaccinations, RollingPeopleVaccinated)
+With PopvsVac (Continent, location, date, population, new_vaccinations, RollingPeopleVaccinated) --PopvsVacis the name of a newly created table
 as
 (
 SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
@@ -159,8 +159,7 @@ SELECT *, (RollingPeopleVaccinated/population)*100
 FROM PopvsVac
 
 
-
---TEMP TABLE
+--OR, we can create a TEMP TABLE
 
 DROP TABLE #PercentPopulationVaccinated2
 CREATE TABLE #PercentPopulationVaccinated2
