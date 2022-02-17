@@ -278,7 +278,7 @@ FROM RowNumCTE
 WHERE row_num > 1 
 ORDER BY PropertyAddress
 
---And there were deleted!!!
+--And they were deleted!!!
 
 
 ---6) DELETE UNUSED COLUMNS. 
@@ -293,7 +293,7 @@ DROP COLUMN PropertyAddress, OwnerAddress, TaxDistrict
 ALTER TABLE PortfolioProject.dbo.NashvilleHousing
 DROP COLUMN SaleDate
 
---To check ho we did
+--To check how we did
 SELECT *
 FROM PortfolioProject..NashvilleHousing
 
