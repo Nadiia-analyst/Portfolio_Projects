@@ -46,6 +46,8 @@ JOIN ProjectPortfolio.dbo.NashvilleHousing as b
 
 SELECT a.ParcelID, a.PropertyAddress, b.ParcelID, b.PropertyAddress
 FROM ProjectPortfolio.dbo.NashvilleHousing as a
+
+
 JOIN ProjectPortfolio.dbo.NashvilleHousing as b 
    ON a.ParcelID=b.ParcelID
    AND a.[UniqueID] <> b.[UniqueID] ---where the two doesn't equal (<>) each other
@@ -133,3 +135,76 @@ SET PropertySplitCity = SUBSTRING(PropertyAddress, CHARINDEX(',', PropertyAddres
    
 SELECT *
 FROM PortfolioProject..NashvileHousing
+
+
+--5) REMOVING DUPLICATES AND UNUSED COLUMNS
+--We will write CTE - Common Table Expression, also called as CTE in short form, is a temporary named result set that can be referenced within a SELECT, INSERT, UPDATE, or DELETE statement and View
+--First, we want to partition(divide into groups) our data, we need to identify duplicate rows, and we can do to so by using functions RANK, ORDER RANK, ROW NUMBER
+--We want to partition on things that should be unique to each row
+--Thus, we are choosing following rows because they have to be one and only, and if not we will remove them later
+--ROW_NUMBER is a window function to calculate number of each row within a partition of a result set
+
+SELECT *,
+      ROW_NUMBER() OVER (
+      PARTITION BY ParcelID,
+                   PropertyAddress, 
+                   SalesPrice,
+                   LegalReference
+                   ORDER BY Unique ID --ORDER BY is mandatory here
+                         ) as row_num
+
+FROM PortfolioProject..NashvilleHousing
+ORDER BY ParcelID
+WHERE row_num > 1---However,to run this query we need to add CTE(Temp.Table)
+   
+WITH RowNumCTE AS (
+SELECT *,
+      ROW_NUMBER() OVER (
+      PARTITION BY ParcelID,
+                   PropertyAddress, 
+                   SalesPrice,
+                   LegalReference
+                   ORDER BY Unique ID 
+                         ) as row_num
+
+FROM PortfolioProject..NashvilleHousing
+)
+---Now, we run the following to, finally, see how namy duplicates in the data
+SELECT *
+FROM RowNumCTE
+WHERE row_num > 1  --where "1" in row_num means one unique result, and "2", a duplicate
+ORDER BY PropertyAddress
+
+--To delete duplicates, we use DELETE function
+DELETE
+FROM RowNumCTE
+WHERE row_num > 1
+--ORDER BY PropertyAddress, doesn't work in this query
+
+--Let's check if duplicates were deleted
+SELECT *
+FROM RowNumCTE
+WHERE row_num > 1
+ORDER BY PropertyAddress
+
+
+---6) DELETE UNUSED COLUMNS. 
+---!!!NOTE!!!: Deletion of columns must be verified by manager. Usually raw data doesn't get deleted
+
+SELECT *
+FROM PortfolioProject..NashvilleHousing
+
+ALTER TABLE PortfolioProject.dbo.NashvilleHousing--ALTER is used for creating, deleting columns, etc
+DROP COLUMN PropertyAddress, OwnerAddress, TaxDistrict
+
+ALTER TABLE PortfolioProject.dbo.NashvilleHousing
+DROP COLUMN SaleDate
+
+UPDATE PortfolioProject..NashvilleHousing--??
+
+--To check ho we did
+SELECT *
+FROM PortfolioProject..NashvilleHousing
+
+
+
